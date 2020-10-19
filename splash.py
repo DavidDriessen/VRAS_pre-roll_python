@@ -3,7 +3,7 @@ import glob
 
 guideText = ["If your microphone picks up some background noise\n"
              "(hiss, cars, family members). Please mute your microphone\n"
-             "and unmute when you want to asy something.\n"
+             "and unmute when you want to say something.\n"
              "If you are on oculus quest, use push-to-talk.\n"
              "If you are on rift S, use different microphone than\n"
              "the headset. This is because the rift S microphone\n"
