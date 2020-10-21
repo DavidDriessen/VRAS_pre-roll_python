@@ -9,3 +9,5 @@ Now you need to set an [environment variable]() named `IMAGEMAGICK_BINARY` to `m
 Run `sudo apt install libmagick++-dev` to install the dependencies needed on Ubuntu. 
 You now need to change a policy to allow use of the library. Run `sudo vim /etc/ImageMagick-6/policy.xml`, find the line which says `<policy domain="path" rights="none" pattern="@*"/>`, and comment it out(you can do this by surrounding it with `<!--` and `-->`).
 # Usage 
+Put as many trailers as you want into a new folder named `Trailers`. Put 6 posters in JPG format in a new folder named `Posters`. 
+Once you've done this, you can run `python main.py` to generate a trailer, output file will be `final.mp4`.
