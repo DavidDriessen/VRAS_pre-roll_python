@@ -1,3 +1,5 @@
+from math import ceil
+
 from moviepy.editor import *
 import glob
 
@@ -17,30 +19,43 @@ guideText = ["If your microphone picks up some background noise\n"
 
 
 def text_block(title, text, width=960):
-    title_clip = TextClip(title, color='white', fontsize=55, align='West')
-    text_clip = TextClip(text, color='white', fontsize=35, align='West')
-    return CompositeVideoClip([title_clip, text_clip.set_position((0, title_clip.size[1] + 10))],
-                              size=(width, title_clip.size[1] + text_clip.size[1] + 10))
+    title_clip = TextClip(title, color='white', fontsize=40, align='West')
+    text_clip = TextClip(text, color='white', fontsize=25, align='West')
+    return CompositeVideoClip([title_clip, text_clip.set_position((0, title_clip.size[1] + 5))],
+                              size=(width, title_clip.size[1] + text_clip.size[1] + 5))
 
 
 def right(width=960):
-    title = TextClip("Guidelines", color='white', fontsize=60, align='West')
+    title = TextClip("Guidelines", color='white', fontsize=55, align='West')
     audio = text_block("Audio:", guideText[0], width).set_position((20, title.size[1] + 10))
-    toys = text_block("Toys / other items:", guideText[1], width).set_position((20, title.size[1] + 10 + audio.size[1] + 10))
+    toys = text_block("Toys / other items:", guideText[1], width).set_position(
+        (20, title.size[1] + 10 + audio.size[1] + 10))
     return CompositeVideoClip([title, audio, toys], size=(width, int(1080))).to_ImageClip()
 
 
-def left(width=960):
-    title = TextClip("Currently showing the following and more", color='white', fontsize=50, align='West')
-    posters = [ImageClip(p).resize((320, 500)) for p in glob.glob('Posters/*.jpg')]
-    posters_array = clips_array([[posters[0], posters[1], posters[2]], [posters[3], posters[4], posters[5]]])
-    return CompositeVideoClip([title, posters_array.set_pos((0, title.size[1] + 10))],
-                              size=(width, int(1080))).to_ImageClip()
+def left(width=960, length=20):
+    # title = TextClip("Currently showing the following and more", color='white', fontsize=50, align='West')
+    title = TextClip("Sign up at: www.vranimesociety.com\nCurrently showing the following shows", color='white',
+                     fontsize=52, align='West')
+    posters = [ImageClip(p).resize((width / 3, 450)) for p in glob.glob('Posters/*')]
+    if len(posters) % 2:
+        posters.append(ColorClip((width / 3, 450), (0, 0, 0)))
+    half = len(posters) // 2
+    if len(posters) > 6:
+        posters_array = clips_array([posters[half:] + posters[half:], posters[:half] + posters[:half]])
+        return CompositeVideoClip([
+            title.set_position((0, 30)),
+            posters_array.set_position(
+                lambda t: (-(int((t * (width / 3 / (length / half)))) % (width / 3 * half)), 'bottom'))
+        ], size=(width, int(1080)))
+    posters_array = clips_array([posters[half:], posters[:half]])
+    return CompositeVideoClip([title.set_position((0, 30)), posters_array.set_position((0, 'bottom'))],
+                              size=(width, int(1080)))
 
 
 def splash():
-    return clips_array([[left(1000), right(920)]]).subclip(0, 30).fadein(1).fadeout(1)
+    return clips_array([[left().margin(right=40), right(920)]]).subclip(0, 20)
 
 
 if __name__ == '__main__':
-    splash().write_videofile('./output.mp4', fps=1)
+    splash().write_videofile('output/splash.mp4', fps=24)

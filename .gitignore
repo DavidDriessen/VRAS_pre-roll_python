@@ -1,6 +1,8 @@
 .idea
 Posters
 Trailers
+output
+Session
 venv*
 *.mp4
 *.mp3
