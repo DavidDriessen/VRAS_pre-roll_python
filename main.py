@@ -80,9 +80,9 @@ if update or not os.path.isfile('output/stage2 trailers.mp4'):
         final_clip = CompositeVideoClip(
             [splash_clip, trailers_clip.resize(width=900).set_position(('right', 'bottom'))])
 
-    final_clip.write_videofile('output/stage2 trailers.mp4', fps=24)
+    final_clip.write_videofile('output/stage2 trailers.mp4', fps=24, audio_codec="aac", audio_bitrate = "128k")
     update = True
 
 if update or not os.path.isfile('output/final.mp4'):
     final_clip = add_timer(VideoFileClip('output/stage2 trailers.mp4')).fadeout(2)
-    final_clip.write_videofile('output/final.mp4', fps=24)
+    final_clip.write_videofile('output/final.mp4', fps=24, audio_codec="aac", audio_bitrate = "128k")
