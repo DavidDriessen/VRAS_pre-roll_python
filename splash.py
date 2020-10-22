@@ -58,4 +58,4 @@ def splash():
 
 
 if __name__ == '__main__':
-    splash().write_videofile('output/splash.mp4', fps=24)
+    splash().write_videofile('output/stage1 splash.mp4', fps=24)
