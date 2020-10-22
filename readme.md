@@ -16,8 +16,8 @@ Once you've done this, you can run `python main.py` to generate a trailer, outpu
 The program renders in stages, so if you want to rerender from a specific stage just remove that stage from `output` and rerun.
 Al stages before the one removed will be reused.
 
-##Options
-###-force
+## Options
+### -force
 Rerender everything
-###-big or bigTrailers
+### -big or bigTrailers
 Play the trailers in fullscreen
