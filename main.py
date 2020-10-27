@@ -16,7 +16,6 @@ for arg in sys.argv[1:]:
     elif arg == '-force':
         update = True
 
-
 if not os.path.isdir('output'):
     ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(ROOT_DIR, "output")
@@ -37,7 +36,9 @@ if update or not os.path.isfile('output/stage2 trailers.mp4'):
             clip = clip.subclip(t_start=int(start[0]))
         return clip.volumex(0.4).resize(width=1920).fadein(1).fadeout(1)
 
+
     current_session_poster = glob.glob('Session/*')
+    current_session = None
     if len(current_session_poster) > 0:
         poster = ImageClip(current_session_poster[0])
         title = TextClip(current_session_poster[0].split('.')[0], color='white', fontsize=40)
@@ -80,9 +81,9 @@ if update or not os.path.isfile('output/stage2 trailers.mp4'):
         final_clip = CompositeVideoClip(
             [splash_clip, trailers_clip.resize(width=900).set_position(('right', 'bottom'))])
 
-    final_clip.write_videofile('output/stage2 trailers.mp4', fps=24, audio_codec="aac", audio_bitrate = "128k")
+    final_clip.write_videofile('output/stage2 trailers.mp4', fps=24, audio_codec="aac", audio_bitrate="128k")
     update = True
 
 if update or not os.path.isfile('output/final.mp4'):
     final_clip = add_timer(VideoFileClip('output/stage2 trailers.mp4')).fadeout(2)
-    final_clip.write_videofile('output/final.mp4', fps=24, audio_codec="aac", audio_bitrate = "128k")
+    final_clip.write_videofile('output/final.mp4', fps=24, audio_codec="aac", audio_bitrate="128k")
