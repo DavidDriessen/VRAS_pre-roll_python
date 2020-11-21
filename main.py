@@ -3,6 +3,7 @@ from moviepy.editor import *
 import subprocess
 import glob
 from pathlib import Path
+from random import shuffle
 
 # Stage 1 generating still frame 
 splash().save_frame('./output/posters.png')
@@ -20,19 +21,39 @@ for session in glob.glob('Sessions/*'):
         name = p.stem
         current.append(name)
         poster_array.append("./output/tmp/{}.png".format(name))
-        cmd = ["convert",poster,"-resize","320x450!","./output/tmp/{}.png".format(name)]
+        cmd = ["magick","convert",poster,"-resize","320x450!","./output/tmp/{}.png".format(name)]
         p = subprocess.Popen(cmd)
         p.wait()
         pass
-    cmd = ["convert"] + poster_array + ["+append","./output/tmp/lineup.png"]
+    cmd = ["magick","convert"] + poster_array + ["+append","./output/tmp/lineup.png"]
     p = subprocess.Popen(cmd)
     p.wait()
 
-    cmd = ["convert","./output/posters.png","-gravity","center","-fill","white","-pointsize","40","-font","Helvetica","-annotate","+480+40"," & ".join(current), "./output/tmp/text.png"]
+    cmd = ["magick","convert","./output/posters.png","-gravity","center","-fill","white","-pointsize","40","-font","Arial","-annotate","+480+40"," & ".join(current), "./output/tmp/text.png"]
     p = subprocess.Popen(cmd)
     p.wait()
 
-    cmd = ["convert","./output/tmp/text.png","./output/tmp/lineup.png", "-gravity","center","-geometry","+480+315","-composite", "./output/splash/{}.png".format("+".join(current))]
+    cmd = ["magick","convert","./output/tmp/text.png","./output/tmp/lineup.png", "-gravity","center","-geometry","+480+315","-composite", "./output/splash/{}.png".format("+".join(current))]
     p = subprocess.Popen(cmd)
     p.wait()
 # Stage 4 concatenating stage 2 + 3
+
+for splash in glob.glob("./output/splash/*"):
+    concat_list = []
+    p = Path(splash)
+    current_session = p.stem.split("+")
+
+    g = glob.glob("./output/Trailers/*")
+    shuffle(g)
+    for trailer in g:
+        p = Path(trailer)
+        current_trailer = p.stem
+        # Don't want to show a trailer of the show that we're currently showing
+        if current_trailer in current_session:
+            continue
+        concat_list.append(trailer)
+        pass
+    f = open("./concatlist.txt", "w")
+    f.write("file "+"\nfile ".join(concat_list))
+    f.close()
+    pass
