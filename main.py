@@ -14,7 +14,7 @@ for trailer in glob.glob('Trailers/*.mp4'):
 for session in glob.glob('Sessions/*'):
     poster_array = []
     current = []
-    for poster in glob.glob(session):
+    for poster in glob.glob(session + '/*'):
         name = poster.split(".")[-2]
         current.append(name)
         poster_array.append("./output/tmp/{}.png".format(name))
