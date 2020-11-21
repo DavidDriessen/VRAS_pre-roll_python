@@ -2,6 +2,7 @@ from splash import splash
 from moviepy.editor import *
 
 # Stage 1 generating still frame 
+splash().save_frame('./output/posters.png')
 
 # Stage 2 Overlaying trailers over still frame
 
