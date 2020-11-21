@@ -2,6 +2,7 @@ from splash import splash
 from moviepy.editor import *
 import subprocess
 import glob
+from pathlib import Path
 
 # Stage 1 generating still frame 
 splash().save_frame('./output/posters.png')
@@ -15,7 +16,8 @@ for session in glob.glob('Sessions/*'):
     poster_array = []
     current = []
     for poster in glob.glob(session + '/*'):
-        name = poster.split(".")[-2]
+        p = Path(poster)
+        name = p.stem
         current.append(name)
         poster_array.append("./output/tmp/{}.png".format(name))
         cmd = ["convert",poster,"-resize","320x450!","./output/tmp/{}.png".format(name)]
