@@ -15,15 +15,16 @@ for session in glob.glob('Sessions/*'):
     poster_array = []
     current = []
     for poster in glob.glob(session):
-        poster_array.append(poster)
-
         name = poster.split(".")[-2]
         current.append(name)
-
-        subprocess.call("convert {} -resize 320x450! ./output/tmp/{}.png".format(poster, name))
+        poster_array.append("./output/tmp/{}.png".format(name))
+        cmd = ["convert",poster,"-resize","320x450!","./output/tmp/{}.png".format(name)]
+        subprocess.call(cmd)
         pass
-    subprocess.call("convert {} +append ./output/tmp/lineup.png".format(" ".join(poster_array)))
-    subprocess.call("convert ./output/posters.png -gravity center -fill white -pointsize 40 -font Helvetica -annotate +480+40 '{}' ./output/tmp/text.png".format(" & ").join(current))
-    subprocess.call("convert ./output/tmp/text.png ./output/tmp/lineup.png -gravity center -geometry +480+315 -composite ./output/splash/{}.png".format("+".join(current)))
+    cmd = ["convert"] + poster_array + ["+append","./output/tmp/lineup.png"]
+    subprocess.Popen(cmd)
+    cmd = ["convert","./output/posters.png","-gravity","center","-fill","white","-pointsize","40","-font","Helvetica","-annotate","+480+40"," & ".join(current), "./output/tmp/text.png"]
+    subprocess.call(cmd)
+    cmd = ["convert","./output/tmp/text.png","./output/tmp/lineup.png", "-gravity","center","-geometry","+480+315","-composite", "./output/splash/{}.png".format("+".join(current))]
     
 # Stage 4 concatenating stage 2 + 3
