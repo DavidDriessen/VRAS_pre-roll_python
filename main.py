@@ -1,5 +1,6 @@
 from splash import splash
 from moviepy.editor import *
+import subprocess
 
 # Stage 1 generating still frame 
 splash().save_frame('./output/posters.png')
