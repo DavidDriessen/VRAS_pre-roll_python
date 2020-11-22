@@ -2,6 +2,7 @@ from math import ceil
 
 from moviepy.editor import *
 import glob
+from random import shuffle
 
 guideText = ["If your microphone picks up some background noise\n"
              "(hiss, cars, family members). Please mute your microphone\n"
@@ -37,7 +38,13 @@ def left(width=960, length=20):
     # title = TextClip("Currently showing the following and more", color='white', fontsize=50, align='West')
     title = TextClip("Sign up at: www.vranimesociety.com\nCurrently showing the following shows", color='white',
                      fontsize=52, align='West')
-    posters = [ImageClip(p).resize((width / 3, 450)) for p in glob.glob('Posters/*')]
+    poster_glob = glob.glob("Posters/*")
+    shuffle(poster_glob)
+    poster_arr = []
+    for i in range(0,6):
+        posters_arr.append( poster_glob[i] )
+        pass
+    posters = [ImageClip(p).resize((width / 3, 450)) for p in posters_arr]
     if len(posters) % 2:
         posters.append(ColorClip((width / 3, 450), (0, 0, 0)))
     half = len(posters) // 2
