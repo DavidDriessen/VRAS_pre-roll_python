@@ -40,7 +40,7 @@ def left(width=960, length=20):
                      fontsize=52, align='West')
     poster_glob = glob.glob("Posters/*")
     shuffle(poster_glob)
-    poster_arr = []
+    posters_arr = []
     for i in range(0,6):
         posters_arr.append( poster_glob[i] )
         pass
