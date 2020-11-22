@@ -21,6 +21,6 @@ Sessions/
     ├── Hypnosis Mic.jpg
     └── Taiso Samurai.jpg
 ```
-Please use the same filenames for trailers and posters. Example: jojo.png & jojo.mp4
+Please use the same filenames for trailers and posters. Example: `jojo.png` & `jojo.mp4`
 
 Once you have followed all these steps, just do `python main.py`. All rendered pre-rolls will go in the folder called `output`.
