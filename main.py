@@ -30,7 +30,7 @@ for session in glob.glob('Sessions/*'):
     p = subprocess.Popen(cmd)
     p.wait()
 
-    cmd = ["magick","convert","./output/posters.png","-gravity","center","-fill","white","-pointsize","40","-font","Arial","-annotate","+480+40"," & ".join(current), "./output/tmp/text.png"]
+    cmd = ["magick","convert","./output/posters.png","-gravity","center","-fill","white","-pointsize","40","-font","Arial","-annotate","+480+40","This session:\n" + " & ".join(current), "./output/tmp/text.png"]
     p = subprocess.Popen(cmd)
     p.wait()
 
