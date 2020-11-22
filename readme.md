@@ -10,15 +10,17 @@ Run `sudo apt install libmagick++-dev` to install the dependencies needed on Ubu
 You now need to change a policy to allow use of the library. Run `sudo vim /etc/ImageMagick-6/policy.xml`, find the line which says `<policy domain="path" rights="none" pattern="@*"/>`, and comment it out(you can do this by surrounding it with `<!--` and `-->`).
 # Usage 
 Put as many trailers as you want into a new folder named `Trailers`. Put 6 or more posters in a new folder named `Posters`.\
-Put a poster of the current session in a folder called `Session`. The filename will be used to determine the name of the current session.
-The trailers and posters will be shown in alphabetical order of there file names.
-Once you've done this, you can run `python main.py` to generate a trailer, output file will be in the folder `output` and will be named `final.mp4`.
+Create a folder called `Session`, in this folder create folders for your sessions. Example folder structure:
+```
+Sessions/
+├── Fate UBW
+│   └── Fate UBW.jpg
+├── Fullmetal Alchemist
+│   └── FMAB.jpg
+└── Seasonal Anime #4 [Fall]
+    ├── Hypnosis Mic.jpg
+    └── Taiso Samurai.jpg
+```
+Please use the same filenames for trailers and posters. Example: jojo.png & jojo.mp4
 
-The program renders in stages, so if you want to rerender from a specific stage just remove that stage from `output` and rerun.
-Al stages before the one removed will be reused.
-
-## Options
-### -force
-Rerender everything
-### -big or bigTrailers
-Play the trailers in fullscreen
+Once you have followed all these steps, just do `python main.py`. All rendered trailers will go in the folder called `output`.
