@@ -23,4 +23,4 @@ Sessions/
 ```
 Please use the same filenames for trailers and posters. Example: jojo.png & jojo.mp4
 
-Once you have followed all these steps, just do `python main.py`. All rendered trailers will go in the folder called `output`.
+Once you have followed all these steps, just do `python main.py`. All rendered pre-rolls will go in the folder called `output`.
