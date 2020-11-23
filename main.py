@@ -6,6 +6,17 @@ from pathlib import Path
 from random import shuffle
 import os
 
+def clean_dir(dir):
+    files = glob.glob(dir + "/*", recursive=True)
+    for file in files:
+        os.remove(file)
+        pass
+    pass
+clean_dir('./output/splash/')
+clean_dir('./output/Trailers/')
+clean_dir('./output/tmp/')
+
+
 # Stage 1 generating still frame 
 splash().save_frame('./output/posters.png')
 
@@ -44,7 +55,7 @@ for splash in glob.glob("./output/splash/*"):
     p = Path(splash)
     current_session = p.stem.split("+")
 
-    cmd = ["ffmpeg", "-loop", "1", "-i", os.path.realpath(splash), "-c:v", "libx264", "-t", "10", "-pix_fmt", "yuv420p", "-vf", "scale=1920:1080", "-y", "./output/tmp/splash.mp4"]
+    cmd = ["ffmpeg", "-f","lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-loop", "1", "-i", os.path.realpath(splash), "-c:v", "libx264", "-t", "10", "-pix_fmt", "yuv420p", "-vf", "scale=1920:1080", "-y", "./output/tmp/splash.mp4"]
     p = subprocess.Popen(cmd)
     p.wait()
 
@@ -57,11 +68,23 @@ for splash in glob.glob("./output/splash/*"):
         if current_trailer in current_session:
             print("Not showing " + current_trailer + " because current session is " + "+".join(current_session))
             continue
-        concat_list.append( VideoFileClip( trailer.replace("\\","/") ) )
-        concat_list.append( VideoFileClip('./output/tmp/splash.mp4') )
+        concat_list.append(  trailer.replace("\\","/") )
+        concat_list.append( './output/tmp/splash.mp4') 
         
         pass
-    print(concat_list)
-    concat_clip = concatenate_videoclips(concat_list, method="compose") 
-    concat_clip.write_videofile("./output/00 {}.mp4".format("+".join(current_session)))
+    filter=""
+    i=0
+    cmd = ["ffmpeg"]
+    for video in concat_list:
+        filter = filter + "[{0}:v] [{0}:a]".format(i)
+        cmd.append("-i")
+        cmd.append(video)
+        i+=1
+        
+        pass
+    filter = filter + " concat=n={}:v=1:a=1 [v] [a]".format(len(concat_list))
+    cmd = cmd + ["-filter_complex",filter,"-map","[v]","-map","[a]","-y","./output/00 {}.mp4".format("+".join(current_session))]
+    print(" ".join(cmd))
+    p = subprocess.Popen(cmd)
+    p.wait()
     pass
