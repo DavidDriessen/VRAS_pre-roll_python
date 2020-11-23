@@ -74,15 +74,21 @@ for splash in glob.glob("./output/splash/*"):
         pass
     filter=""
     i=0
+    length=0
     cmd = ["ffmpeg"]
     for video in concat_list:
         filter = filter + "[{0}:v] [{0}:a]".format(i)
         cmd.append("-i")
         cmd.append(video)
+        
+        process = subprocess.Popen(["ffprobe", "-loglevel", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", video],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out = process.communicate()
+        length = length + float(out[0])
+
         i+=1
         
         pass
-    filter = filter + " concat=n={}:v=1:a=1 [v] [a]".format(len(concat_list))
+    filter = filter + " concat=n={0}:v=1:a=1 [b] [a]; [b] drawtext=fontfile=OpenSans-Regular.ttf:text='%{{eif\\:trunc(mod((({1}-t)/60),60))\\:d\\:2}}\\:%{{eif\\:trunc(mod({1}-t\\,60))\\:d\\:2}}':fontcolor=white:fontsize=24:x=w-tw-10:y=h-th-10:box=1:boxcolor=black@0.5:boxborderw=10,format=yuv420p [v]".format(len(concat_list), length)
     cmd = cmd + ["-filter_complex",filter,"-map","[v]","-map","[a]","-y","./output/00 {}.mp4".format("+".join(current_session))]
     print(" ".join(cmd))
     p = subprocess.Popen(cmd)
