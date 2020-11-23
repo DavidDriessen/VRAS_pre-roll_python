@@ -28,7 +28,7 @@ for trailer in glob.glob('Trailers/*.mp4'):
 for session in glob.glob('Sessions/*'):
     poster_array = []
     current = []
-    for poster in glob.glob(session + '/*'):
+    for poster in glob.glob(glob.escape(session) + '/*'):
         p = Path(poster)
         name = p.stem
         current.append(name)
