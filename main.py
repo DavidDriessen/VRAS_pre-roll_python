@@ -55,7 +55,7 @@ for splash in glob.glob("./output/splash/*"):
     p = Path(splash)
     current_session = p.stem.split("+")
 
-    cmd = ["ffmpeg", "-f","lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-loop", "1", "-i", os.path.realpath(splash), "-c:v", "libx264", "-t", "10", "-pix_fmt", "yuv420p", "-vf", "scale=1920:1080", "-y", "./output/tmp/splash.mp4"]
+    cmd = ["ffmpeg", "-f","lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-loop", "1", "-i", os.path.realpath(splash), "-c:v", "libx264", "-t", "20", "-pix_fmt", "yuv420p", "-vf", "scale=1920:1080", "-y", "./output/tmp/splash.mp4"]
     p = subprocess.Popen(cmd)
     p.wait()
 
