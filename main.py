@@ -55,7 +55,7 @@ for splash in glob.glob("./output/splash/*"):
     p = Path(splash)
     current_session = p.stem.split("+")
 
-    cmd = ["ffmpeg", "-f","lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-loop", "1", "-i", os.path.realpath(splash), "-c:v", "libx264", "-t", "10", "-pix_fmt", "yuv420p", "-vf", "scale=1920:1080", "-y", "./output/tmp/splash.mp4"]
+    cmd = ["ffmpeg", "-f","lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-loop", "1", "-i", os.path.realpath(splash), "-c:v", "libx264", "-t", "20", "-pix_fmt", "yuv420p", "-vf", "scale=1920:1080", "-y", "./output/tmp/splash.mp4"]
     p = subprocess.Popen(cmd)
     p.wait()
 
@@ -88,7 +88,7 @@ for splash in glob.glob("./output/splash/*"):
         i+=1
         
         pass
-    filter = filter + " concat=n={0}:v=1:a=1 [b] [a]; [b] drawtext=fontfile=/WINDOWS/Fonts/SEGOEUI.TTF:text='%{{eif\\:trunc(mod((({1}-t)/60),60))\\:d\\:2}}\\:%{{eif\\:trunc(mod({1}-t\\,60))\\:d\\:2}}':fontcolor=white:fontsize=24:x=w-tw-10:y=h-th-10:box=1:boxcolor=black@0.5:boxborderw=10,format=yuv420p [v]".format(len(concat_list), length)
+    filter = filter + " concat=n={0}:v=1:a=1 [b] [a]; [b] drawtext=fontfile=/WINDOWS/Fonts/SEGOEUI.TTF:text='%{{eif\\:trunc(mod((({1}-t)/60),60))\\:d\\:2}}\\:%{{eif\\:trunc(mod({1}-t\\,60))\\:d\\:2}}':fontcolor=white:fontsize=72:x=w-tw-10:y=10:box=1:boxcolor=black@0.5:boxborderw=10,format=yuv420p [v]".format(len(concat_list), length)
     cmd = cmd + ["-filter_complex",filter,"-map","[v]","-map","[a]","-y","./output/00 {}.mp4".format("+".join(current_session))]
     print(" ".join(cmd))
     p = subprocess.Popen(cmd)
