@@ -65,7 +65,12 @@ for trailer in trailers:
     p.wait()
     pass
 # Stage 3 generating still frame with current session poster
-for session in glob.glob('Sessions/*'):
+sessions = glob.glob('Sessions/*')
+if len(sessions) == 0:
+    sys.exit("Please add sessions in the Sessions directory.")
+    pass
+
+for session in sessions:
     poster_array = []
     current = []
     for poster in glob.glob(glob.escape(session) + '/*'):
