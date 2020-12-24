@@ -122,7 +122,7 @@ for splash in glob.glob("./output/splash/*"):
         i+=1
         
         pass
-    filter = filter + " concat=n={0}:v=1:a=1 [b] [a]; [b] drawtext=fontfile="+font+":text='%{{eif\\:trunc(mod((({1}-t)/60),60))\\:d\\:2}}\\:%{{eif\\:trunc(mod({1}-t\\,60))\\:d\\:2}}':fontcolor=white:fontsize=72:x=w-tw-10:y=10:box=1:boxcolor=black@0.5:boxborderw=10,format=yuv420p [v]".format(len(concat_list), length)
+    filter = filter + " concat=n={0}:v=1:a=1 [b] [a]; [b] drawtext=fontfile={2}:text='%{{eif\\:trunc(mod((({1}-t)/60),60))\\:d\\:2}}\\:%{{eif\\:trunc(mod({1}-t\\,60))\\:d\\:2}}':fontcolor=white:fontsize=72:x=w-tw-10:y=10:box=1:boxcolor=black@0.5:boxborderw=10,format=yuv420p [v]".format(len(concat_list), length, font)
     cmd = cmd + ["-filter_complex",filter,"-map","[v]","-map","[a]","-y","./output/00 {}.mp4".format("+".join(current_session))]
     print(" ".join(cmd))
     p = subprocess.Popen(cmd)
