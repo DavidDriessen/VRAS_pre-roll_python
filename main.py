@@ -35,6 +35,10 @@ check_program("ffprobe")
 check_program("ffmpeg")
 check_program("magick")
 
+if not os.path.isfile(font):
+    sys.exit("Font " + font + " was not found on your system.")
+    pass
+
 def clean_dir(dir):
     files = glob.glob(dir + "/*", recursive=True)
     for file in files:
