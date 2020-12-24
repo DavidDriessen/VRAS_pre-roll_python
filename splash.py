@@ -47,7 +47,16 @@ def left(width=960, length=20):
     for i in range(0,6):
         posters_arr.append( poster_glob[i] )
         pass
-    posters = [ImageClip(p).resize((width / 3, 450)) for p in posters_arr]
+    posters = []
+    for p in posters_arr:
+        try:
+            posters.append(ImageClip(p).resize((width / 3, 450)))
+            pass
+        except ValueError :
+            sys.exit("{0} is incompatible with moviepy. Please use a different poster".format(p))
+            pass
+        
+        pass
     if len(posters) % 2:
         posters.append(ColorClip((width / 3, 450), (0, 0, 0)))
     half = len(posters) // 2
