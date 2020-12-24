@@ -9,8 +9,8 @@ Now you need to set an [environment variable](http://www.dowdandassociates.com/b
 Run `sudo apt install libmagick++-dev` to install the dependencies needed on Ubuntu. 
 You now need to change a policy to allow use of the library. Run `sudo vim /etc/ImageMagick-6/policy.xml`, find the line which says `<policy domain="path" rights="none" pattern="@*"/>`, and comment it out(you can do this by surrounding it with `<!--` and `-->`).
 # Usage 
-Put as many trailers as you want into a new folder named `Trailers`. Put 6 or more posters in a new folder named `Posters`.\
-Create a folder called `Session`, in this folder create folders for your sessions. Example folder structure:
+On your first run of the program, it will create 3 folders named `output`, `Posters`, `Trailers` and `Sessions`. 
+The folder `output` will be used for temporary files and the final pre-rolls. The folder `Posters` should be filled with 6 or more posters for the currently showing showcase. The folder `Trailers` can have as many trailers as you want, these are the trailers shown in the bottom right of the screen. The folder `Sessions` should contain folders for diffrent sessions, example folder structure for the folder `Sessions` is below.
 ```
 Sessions/
 ├── Fate UBW
