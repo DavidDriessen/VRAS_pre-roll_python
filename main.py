@@ -121,6 +121,8 @@ for splash in glob.glob("./output/splash/*"):
     i=0
     length=0
     cmd = ["ffmpeg"]
+    if len(concat_list) == 0:
+        continue
     for video in concat_list:
         filter = filter + "[{0}:v] [{0}:a]".format(i)
         cmd.append("-i")
