@@ -6,6 +6,20 @@ from pathlib import Path
 from random import shuffle
 import os
 
+# Pre-run checks
+def check_dir(dir):
+    if not os.path.isdir(dir):
+        os.mkdir(dir)
+        pass
+    pass
+check_dir('./output/splash')
+check_dir('./output/tmp')
+check_dir('./output/Trailers')
+check_dir('./output')
+check_dir('./Posters')
+check_dir('./Sessions')
+check_dir('./Trailers')
+
 def clean_dir(dir):
     files = glob.glob(dir + "/*", recursive=True)
     for file in files:
