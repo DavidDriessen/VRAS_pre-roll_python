@@ -80,7 +80,7 @@ for splash in glob.glob("./output/splash/*"):
         current_trailer = p.stem
         # Don't want to show a trailer of the show that we're currently showing
         if current_trailer in current_session:
-            print("Not showing " + current_trailer + " because current session is " + "+".join(current_session))
+            print("Not showing " + current_trailer + " trailer because current session is " + "+".join(current_session))
             continue
         concat_list.append(  trailer.replace("\\","/") )
         concat_list.append( './output/tmp/splash.mp4') 
