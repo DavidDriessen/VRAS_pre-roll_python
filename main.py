@@ -1,6 +1,7 @@
 from splash import splash
 from moviepy.editor import *
 import subprocess
+import shutil
 import glob
 from pathlib import Path
 from random import shuffle
@@ -19,6 +20,18 @@ check_dir('./output')
 check_dir('./Posters')
 check_dir('./Sessions')
 check_dir('./Trailers')
+
+# Required programs
+
+def check_program(cmd):
+    file = shutil.which(cmd)
+    if str(file) == "None":
+        sys.exit(cmd + " was not found on your system.")
+        pass
+    pass
+check_program("ffprobe")
+check_program("ffmpeg")
+check_program("magick")
 
 def clean_dir(dir):
     files = glob.glob(dir + "/*", recursive=True)
