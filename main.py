@@ -8,7 +8,7 @@ from random import shuffle
 import os
 
 # Paths / prefixes
-font = "C:/WINDOWS/Fonts/SEGOEUI.TTF"
+font = "./font.ttf"
 magick_convert = ["magick","convert"]
 ffmpeg = ["ffmpeg"]
 ffprobe = ["ffprobe"]
