@@ -39,12 +39,24 @@ def left(width=960, length=20):
     title = TextClip("Sign up at: www.vranimesociety.com\nCurrently showing the following shows", color='white',
                      fontsize=52, align='West')
     poster_glob = glob.glob("Posters/*")
+    if len(poster_glob) < 6:
+        sys.exit("There are not enough posters in the Posters folder. Please add atleast 6 posters.")
+        pass
     shuffle(poster_glob)
     posters_arr = []
     for i in range(0,6):
         posters_arr.append( poster_glob[i] )
         pass
-    posters = [ImageClip(p).resize((width / 3, 450)) for p in posters_arr]
+    posters = []
+    for p in posters_arr:
+        try:
+            posters.append(ImageClip(p).resize((width / 3, 450)))
+            pass
+        except ValueError :
+            sys.exit("{0} is incompatible with moviepy. Please use a different poster".format(p))
+            pass
+        
+        pass
     if len(posters) % 2:
         posters.append(ColorClip((width / 3, 450), (0, 0, 0)))
     half = len(posters) // 2
