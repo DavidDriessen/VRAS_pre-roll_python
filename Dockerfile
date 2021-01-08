@@ -8,6 +8,6 @@ COPY . .
 RUN pip3 install -r requirements.txt
 
 # Remove policy
-RUN pattern='<policy domain="path" rights="none" pattern="@*"/>' && replace='<!-- <policy domain="path" rights="none" pattern="@*"/> -->' && sed --expression 's@$pattern@$replace@g' /etc/ImageMagick-6/policy.xml
+RUN pattern='<policy domain="path" rights="none" pattern="@*"/>' && replace='<!-- <policy domain="path" rights="none" pattern="@*"/> -->' && sed --expression 's@$pattern@$replace@g' /etc/ImageMagick-6/policy.xml > /etc/ImageMagick-6/policy.xml
 
 CMD python3 main.py
