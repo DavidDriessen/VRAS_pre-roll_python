@@ -9,9 +9,12 @@ import os
 
 # Paths / prefixes
 font = "./font.ttf"
-magick_convert = ["magick","convert"]
+magick_convert = ["convert"]
 ffmpeg = ["ffmpeg"]
 ffprobe = ["ffprobe"]
+
+if os.name == 'nt':
+    magick_convert = ["magick"] + magick_convert
 
 # Pre-run checks
 def check_dir(dir):
