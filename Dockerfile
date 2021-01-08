@@ -9,4 +9,4 @@ RUN pattern='<policy domain="path" rights="none" pattern="@*"/>' && replace='<!-
 WORKDIR /app
 COPY * ./
 
-CMD ['python', 'main.py']
+CMD python main.py
