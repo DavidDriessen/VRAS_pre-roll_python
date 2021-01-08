@@ -66,7 +66,7 @@ if len(trailers) == 0:
     pass
 
 for trailer in trailers:
-    p = subprocess.Popen(ffmpeg + ["-i", "./output/posters.png", "-i", "./{0}".format(trailer), "-c:a","copy", "-filter_complex", "[1:0]scale=900:506,setsar=1[a];[0:0][a] overlay=1020:574", "-map", "1:a", "-shortest", "-y", "./output/{0}".format(trailer)])
+    p = subprocess.Popen(ffmpeg + ["-i", "./output/posters.png", "-i", "./{0}".format(trailer), "-c:a","copy", "-filter_complex", "[1:v:0]scale=900:506,setsar=1[a];[0:v:0][a] overlay=1020:574", "-map", "1:a", "-shortest", "-y", "./output/{0}".format(trailer)])
     p.wait()
     pass
 # Stage 3 generating still frame with current session poster
