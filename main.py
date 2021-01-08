@@ -51,7 +51,10 @@ if not os.path.isfile(font):
 def clean_dir(dir):
     files = glob.glob(dir + "/*", recursive=True)
     for file in files:
-        os.remove(file)
+        try:
+            os.remove(file)
+        except IsADirectoryError:
+            pass
         pass
     pass
 clean_dir('./tmp/splash/')
