@@ -19,6 +19,7 @@ def check_dir(dir):
         os.mkdir(dir)
         pass
     pass
+check_dir('./output')
 check_dir('./output/splash')
 check_dir('./output/tmp')
 check_dir('./output/Trailers')
