@@ -2,6 +2,24 @@ A project to automatically generate previews for VRAS sessions.
 # Setup 
 To install the python dependencies, simply run `pip install -r requirements.txt`. 
 For other dependencies, follow the correct section depending on which OS.
+## Docker (recommended)
+Docker is the recommended way to setup this project, it makes installation and usage much easier.
+
+To setup docker, run the following commands:
+```bash
+git clone https://github.com/DavidDriessen/VRAS_pre-roll.git
+cd VRAS_pre-roll
+docker built -t VRAS_pre-roll .
+```
+Then to run the project, run
+```bash
+docker run \
+-v "/$(pwd)/Sessions/:/app/Sessions" \
+-v "/$(pwd)/Posters/:/app/Posters" \
+-v "/$(pwd)/Trailers/:/app/Trailers" \
+-v "/$(pwd)/output/:/app/output" \
+VRAS_pre-roll
+```
 ## Windows
 If you have [choco](https://chocolatey.org/) installed, you can run `choco install imagemagick` to automatically install it. 
 Now you need to set an [environment variable](http://www.dowdandassociates.com/blog/content/howto-set-an-environment-variable-in-windows-command-line-and-registry/) named `IMAGEMAGICK_BINARY` to `magick.exe` located in your installation directory. If installed with choco, this will be a folder in your `Program Files` folder, example: `C:\Program Files\ImageMagick-7.0.10-Q16-HDRI`.
