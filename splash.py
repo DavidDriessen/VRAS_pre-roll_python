@@ -4,6 +4,7 @@ from moviepy.editor import *
 import glob
 from random import shuffle
 
+font = "./font.ttf"
 guideText = ["If your microphone picks up some background noise\n"
              "(hiss, cars, family members). Please mute your microphone\n"
              "and unmute when you want to say something.\n"
@@ -20,14 +21,14 @@ guideText = ["If your microphone picks up some background noise\n"
 
 
 def text_block(title, text, width=960):
-    title_clip = TextClip(title, color='white', fontsize=40, align='West')
-    text_clip = TextClip(text, color='white', fontsize=25, align='West')
+    title_clip = TextClip(title, color='white',font=font, fontsize=40, align='West')
+    text_clip = TextClip(text, color='white', font=font, fontsize=25, align='West')
     return CompositeVideoClip([title_clip, text_clip.set_position((0, title_clip.size[1] + 5))],
                               size=(width, title_clip.size[1] + text_clip.size[1] + 5))
 
 
 def right(width=960):
-    title = TextClip("Guidelines", color='white', fontsize=55, align='West')
+    title = TextClip("Guidelines", color='white',font=font, fontsize=55, align='West')
     audio = text_block("Audio:", guideText[0], width).set_position((20, title.size[1] + 10))
     toys = text_block("Toys / other items:", guideText[1], width).set_position(
         (20, title.size[1] + 10 + audio.size[1] + 10))
@@ -37,7 +38,7 @@ def right(width=960):
 def left(width=960, length=20):
     # title = TextClip("Currently showing the following and more", color='white', fontsize=50, align='West')
     title = TextClip("Sign up at: www.vranimesociety.com\nCurrently showing the following shows", color='white',
-                     fontsize=52, align='West')
+                     font=font, fontsize=50, align='West')
     poster_glob = glob.glob("Posters/*")
     if len(poster_glob) < 6:
         sys.exit("There are not enough posters in the Posters folder. Please add atleast 6 posters.")
