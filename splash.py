@@ -38,7 +38,7 @@ def right(width=960):
 def left(width=960, length=20):
     # title = TextClip("Currently showing the following and more", color='white', fontsize=50, align='West')
     title = TextClip("Sign up at: www.vranimesociety.com\nCurrently showing the following shows", color='white',
-                     font=font, fontsize=52, align='West')
+                     font=font, fontsize=50, align='West')
     poster_glob = glob.glob("Posters/*")
     if len(poster_glob) < 6:
         sys.exit("There are not enough posters in the Posters folder. Please add atleast 6 posters.")
