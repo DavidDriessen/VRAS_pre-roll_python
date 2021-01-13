@@ -5,18 +5,14 @@ import glob
 from random import shuffle
 
 font = "./font.ttf"
-guideText = ["If your microphone picks up some background noise\n"
-             "(hiss, cars, family members). Please mute your microphone\n"
-             "and unmute when you want to say something.\n"
-             "If you are on oculus quest, use push-to-talk.\n"
-             "If you are on rift S, use different microphone than\n"
-             "the headset. This is because the rift S microphone\n"
-             "will start turning your voice into a robot.",
-             "Please refrain from using drawing tools in BigScreen.\n"
-             "This is because drawings are very obstructive\n"
-             "and you might not be able to rid of them.\n"
-             "You can use the other ones(tomatoes, popcorn)\n"
-             "as long you don't spam them."
+guideText = ["If your microphone picks up some background noise(hiss, cars,\n"
+             "family members). Please mute your microphone and unmute when\n"
+             "you want to say something. If you are on oculus quest, use\n"
+             "push-to-talk. If you are on rift S, use different microphone than\n"
+             "the headset. This is because the rift S microphone will start\n"
+             "turning your voice into a robot.",
+             "Please refrain from using drawing tools in BigScreen. This is\n"
+             "because drawings are very obstructive"
              ]
 
 
