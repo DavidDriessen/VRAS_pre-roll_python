@@ -2,7 +2,19 @@ A project to automatically generate previews for VRAS sessions.
 # Setup 
 To install the python dependencies, simply run `pip install -r requirements.txt`. 
 For other dependencies, follow the correct section depending on which OS.
-## Docker (recommended)
+## Docker (from registry, recommended)
+Docker is the recommended way to setup this project, it makes installation and usage much easier.
+
+Then to run the project, run
+```bash
+docker run \
+-v "/$(pwd)/Sessions/:/app/Sessions" \
+-v "/$(pwd)/Posters/:/app/Posters" \
+-v "/$(pwd)/Trailers/:/app/Trailers" \
+-v "/$(pwd)/output/:/app/output" \
+daviddual/vras_pre-roll
+```
+## Docker (from source)
 Docker is the recommended way to setup this project, it makes installation and usage much easier.
 
 To setup docker, run the following commands:
