@@ -21,7 +21,7 @@ To setup docker, run the following commands:
 ```bash
 git clone https://github.com/DavidDriessen/VRAS_pre-roll.git
 cd VRAS_pre-roll
-docker built -t VRAS_pre-roll .
+docker build -t vras_pre-roll .
 ```
 Then to run the project, run
 ```bash
