@@ -132,7 +132,7 @@ for splash in glob.glob("./tmp/splash/*"):
     filter=""
     i=0
     length=0
-    cmd = ffmpeg
+    cmd = ffmpeg.copy()
     if len(concat_list) == 0:
         continue
     for video in concat_list:
