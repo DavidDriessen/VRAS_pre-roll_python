@@ -17,14 +17,14 @@ guideText = ["If your microphone picks up some background noise(hiss, cars,\n"
 
 
 def text_block(title, text, width=960):
-    title_clip = TextClip(title, color='white',font=font, fontsize=40, align='West')
+    title_clip = TextClip(title, color='white', font=font, fontsize=40, align='West')
     text_clip = TextClip(text, color='white', font=font, fontsize=25, align='West')
     return CompositeVideoClip([title_clip, text_clip.set_position((0, title_clip.size[1] + 5))],
                               size=(width, title_clip.size[1] + text_clip.size[1] + 5))
 
 
 def right(width=960):
-    title = TextClip("Guidelines", color='white',font=font, fontsize=55, align='West')
+    title = TextClip("Guidelines", color='white', font=font, fontsize=55, align='West')
     audio = text_block("Audio:", guideText[0], width).set_position((20, title.size[1] + 10))
     toys = text_block("Toys / other items:", guideText[1], width).set_position(
         (20, title.size[1] + 10 + audio.size[1] + 10))
@@ -38,22 +38,16 @@ def left(width=960, length=20):
     poster_glob = glob.glob("Posters/*")
     if len(poster_glob) < 6:
         sys.exit("There are not enough posters in the Posters folder. Please add atleast 6 posters.")
-        pass
     shuffle(poster_glob)
     posters_arr = []
-    for i in range(0,6):
-        posters_arr.append( poster_glob[i] )
-        pass
+    for i in range(0, 6):
+        posters_arr.append(poster_glob[i])
     posters = []
     for p in posters_arr:
         try:
             posters.append(ImageClip(p).resize((width / 3, 450)))
-            pass
-        except ValueError :
+        except ValueError:
             sys.exit("{0} is incompatible with moviepy. Please use a different poster".format(p))
-            pass
-        
-        pass
     if len(posters) % 2:
         posters.append(ColorClip((width / 3, 450), (0, 0, 0)))
     half = len(posters) // 2
