@@ -45,7 +45,7 @@ def gen_session_name(session, delimiter=" & "):
 
 
 def gen_current_session_poster(session):
-    current_session_posters = [ffmpeg.input(poster, framerate=25, t=5, loop=1)
+    current_session_posters = [ffmpeg.input(poster, framerate=25, t=10, loop=1)
                                    .filter('scale', 320, 450, force_original_aspect_ratio='decrease')
                                    .filter('pad', width=320, height=450, x='(ow-iw)/2', y='(oh-ih)/2', color='black')
                                for poster in glob.glob(glob.escape(session) + '/*')]
@@ -68,12 +68,18 @@ def get_trailers(session):
 
 
 def gen_trailer_with_current_session(session):
-    cs = gen_current_session_poster(session).filter('setsar', 1).filter_multi_output('split')
+    cs = gen_current_session_poster(session).filter('setsar', 1) \
+        .filter('fade').filter('reverse').filter('fade') \
+        .filter('reverse').filter_multi_output('split')
     vids = []
     trailers = get_trailers(session)
     shuffle(trailers)
     for i in range(len(trailers)):
-        v = ffmpeg.concat(trailers[i].video.filter('scale', 920, 540).filter('setsar', 1), cs[i])
+        v = ffmpeg.concat(trailers[i].video
+                          .filter('scale', 920, 540).filter('setsar', 1)
+                          .filter('fade').filter('reverse')
+                          .filter('fade').filter('reverse'),
+                          cs[i])
         a = trailers[i].audio
         vids += [v, a]
     return ffmpeg.concat(*vids, v=1, a=1)
