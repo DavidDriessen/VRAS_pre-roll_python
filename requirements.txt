@@ -1,1 +1,1 @@
-moviepy
+ffmpeg-python
