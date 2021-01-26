@@ -6,7 +6,7 @@ import ffmpeg
 from pathlib import Path
 from pprint import pprint
 from random import shuffle
-from splash import splash
+from splash import gen_guide, gen_poster_array_with_text
 
 
 # Required programs
@@ -56,8 +56,9 @@ def gen_current_session_poster(session):
     else:
         session_frame = current_session_posters[0]
     return session_frame \
-        .filter('pad', width=920, height=518, x='(ow-iw)/2', y='(oh-ih)/2', color='black') \
-        .drawtext("This session:\n" + gen_session_name(session), fontsize=38, fontcolor='white')
+        .filter('pad', width=920, height=540, x='(ow-iw)/2', y='(oh-ih)', color='black') \
+        .drawtext("This session:", fontsize=38, fontcolor='white', x='(w-tw)/2') \
+        .drawtext(gen_session_name(session), fontsize=37, fontcolor='white', x='(w-tw)/2', y=48)
 
 
 def get_trailers(session):
@@ -72,20 +73,15 @@ def gen_trailer_with_current_session(session):
     trailers = get_trailers(session)
     shuffle(trailers)
     for i in range(len(trailers)):
-        v = ffmpeg.concat(trailers[i].video.filter('scale', 920, 518).filter('setsar', 1), cs[i])
+        v = ffmpeg.concat(trailers[i].video.filter('scale', 920, 540).filter('setsar', 1), cs[i])
         a = trailers[i].audio
         vids += [v, a]
     return ffmpeg.concat(*vids, v=1, a=1)
 
 
-def gen_posters():
-    # TODO: Rewrite to ffmpeg
-    splash().save_frame('./tmp/posters.png')
-    return ffmpeg.input('./tmp/posters.png', framerate=25, t=5, loop=1)
-
-
 def overlay_trailers(trailers_concat):
-    return ffmpeg.overlay(gen_posters(), trailers_concat, x=1920 - 920, y=1080 - 518)
+    return ffmpeg.filter([gen_poster_array_with_text(), ffmpeg.filter([gen_guide(), trailers_concat], 'vstack')],
+                         'hstack')
 
 
 def gen_countdown_file(length_in_sec, session):
