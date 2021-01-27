@@ -67,14 +67,17 @@ def get_trailers(session):
                        [ffmpeg.input(trailer) for trailer in glob.glob('Trailers/*.mp4')]))
 
 
-def gen_trailer_with_current_session(session):
+def gen_trailer_with_current_session(session, max_trailers=99):
     cs = gen_current_session_poster(session).filter('setsar', 1) \
         .filter('fade').filter('reverse').filter('fade') \
         .filter('reverse').filter_multi_output('split')
     vids = []
     trailers = get_trailers(session)
     shuffle(trailers)
-    for i in range(len(trailers)):
+    nTrailers = len(trailers)
+    if nTrailers > max_trailers:
+        nTrailers = max_trailers
+    for i in range(nTrailers):
         v = ffmpeg.concat(trailers[i].video
                           .filter('scale', 920, 540).filter('setsar', 1)
                           .filter('fade').filter('reverse')
@@ -112,28 +115,49 @@ def gen_countdown_file(length_in_sec, session):
     f.close()
 
 
-def render_session(session, debug=False):
+def render_session(session, max_trailers, debug=False):
     session_name = session.split('/')[-1]
-    out = overlay_trailers(gen_trailer_with_current_session(session)) \
+    out = overlay_trailers(gen_trailer_with_current_session(session, max_trailers)) \
         .output('output/' + session_name + '.mp4').overwrite_output()
     if debug:
-        out.view()
+        out.view('output/' + session_name + '.graph')
+        out.view('output/' + session_name + '-detailed.graph', detail=True)
         command = out.compile()
         pprint(command)
-        print()
-        print(' '.join(command).replace('-filter_complex ', '-filter_complex \'').replace(' -map', '\' -map'))
     else:
         out.run()
         gen_countdown_file(float(ffmpeg.probe('output/' + session_name + '.mp4')['format']['duration']),
                            session_name)
 
 
-def render_all_sessions(debug=False):
-    sessions = glob.glob('Sessions/*')
-    if len(sessions) == 0:
-        sys.exit("Please add sessions in the Sessions directory.")
-    for session in sessions:
-        render_session(session, debug)
+from PyInquirer import style_from_dict, Token, prompt
 
+style = style_from_dict({
+    Token.QuestionMark: '#E91E63 bold',
+    Token.Selected: '#673AB7 bold',
+    Token.Instruction: '',  # default
+    Token.Answer: '#2196f3 bold',
+    Token.Question: '',
+})
 
-render_all_sessions()
+import argparse
+
+parser = argparse.ArgumentParser(description='Render session pre-roll')
+parser.add_argument('--debug', dest='debug', action='store_true',
+                    help='Debug ffmpeg command and filter nodes.')
+parser.add_argument('--trailers', dest='max_trailers', metavar='N', type=int, nargs=1,
+                    help='an integer for the accumulator')
+args = parser.parse_args()
+
+sessions = glob.glob('Sessions/*')
+if len(sessions) == 0:
+    sys.exit("Please add sessions in the Sessions directory.")
+result = prompt({
+    'type': 'checkbox',
+    'name': 'sessions',
+    'message': 'What session(s) do you want to render?',
+    'choices': list(map(lambda s: {'name': s.split('/')[-1], 'value': s, 'checked': True}, sessions))
+}, style=style)
+if result:
+    for session in result['sessions']:
+        render_session(session, args.max_trailers[0], args.debug)
