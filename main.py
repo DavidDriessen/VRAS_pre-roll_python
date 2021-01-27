@@ -120,8 +120,12 @@ def render_session(session, max_trailers, debug=False):
     out = overlay_trailers(gen_trailer_with_current_session(session, max_trailers)) \
         .output('output/' + session_name + '.mp4').overwrite_output()
     if debug:
-        out.view('output/' + session_name + '.graph')
-        out.view('output/' + session_name + '-detailed.graph', detail=True)
+        f = open('output/' + session_name + '.graph.png', "wb")
+        f.write(out.view(pipe=True))
+        f.close()
+        f = open('output/' + session_name + '-detailed.graph.png', "wb")
+        f.write(out.view(pipe=True, detail=True))
+        f.close()
         command = out.compile()
         pprint(command)
     else:
