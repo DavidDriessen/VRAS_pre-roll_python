@@ -166,5 +166,8 @@ result = prompt({
     'choices': list(map(lambda s: {'name': s.split('/')[-1], 'value': s, 'checked': True}, sessions))
 }, style=style)
 if result:
+    max_trailers = 99
+    if args.max_trailers:
+        max_trailers = args.max_trailers[0]
     for session in result['sessions']:
-        render_session(session, args.max_trailers[0], args.h265_codec, args.debug)
+        render_session(session, max_trailers, args.h265_codec, args.debug)
