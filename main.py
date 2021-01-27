@@ -115,10 +115,10 @@ def gen_countdown_file(length_in_sec, session):
     f.close()
 
 
-def render_session(session, max_trailers, debug=False):
+def render_session(session, max_trailers, codec, debug=False):
     session_name = session.split('/')[-1]
     out = overlay_trailers(gen_trailer_with_current_session(session, max_trailers)) \
-        .output('output/' + session_name + '.mp4').overwrite_output()
+        .output('output/' + session_name + '.mp4', vcodec=codec, pix_fmt="yuv420p").overwrite_output()
     if debug:
         f = open('output/' + session_name + '.graph.png', "wb")
         f.write(out.view(pipe=True))
@@ -147,6 +147,9 @@ style = style_from_dict({
 import argparse
 
 parser = argparse.ArgumentParser(description='Render session pre-roll')
+parser.add_argument('--h265', dest='h265_codec', action='store_const',
+                    const="libx265", default="libx264",
+                    help='Encode with h265')
 parser.add_argument('--debug', dest='debug', action='store_true',
                     help='Debug ffmpeg command and filter nodes.')
 parser.add_argument('--trailers', dest='max_trailers', metavar='N', type=int, nargs=1,
@@ -164,4 +167,4 @@ result = prompt({
 }, style=style)
 if result:
     for session in result['sessions']:
-        render_session(session, args.max_trailers[0], args.debug)
+        render_session(session, args.max_trailers[0], args.h265_codec, args.debug)
