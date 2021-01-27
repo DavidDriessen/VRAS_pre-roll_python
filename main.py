@@ -3,10 +3,12 @@ import os
 import shutil
 import sys
 import ffmpeg
+import argparse
 from pathlib import Path
 from pprint import pprint
 from random import shuffle
 from splash import gen_guide, gen_poster_array_with_text
+from PyInquirer import style_from_dict, Token, prompt
 
 
 # Required programs
@@ -16,19 +18,9 @@ def check_program(cmd):
         sys.exit(cmd + " was not found on your system.")
 
 
-check_program('ffprobe')
-check_program('ffmpeg')
-
-
 def check_dir(dir):
     if not os.path.isdir(dir):
         os.mkdir(dir)
-
-
-check_dir('./output')
-check_dir('./Posters')
-check_dir('./Sessions')
-check_dir('./Trailers')
 
 
 def get_session_series(session):
@@ -137,8 +129,6 @@ def render_session(session, max_trailers, codec, debug=False):
                            session_name)
 
 
-from PyInquirer import style_from_dict, Token, prompt
-
 style = style_from_dict({
     Token.QuestionMark: '#E91E63 bold',
     Token.Selected: '#673AB7 bold',
@@ -146,8 +136,6 @@ style = style_from_dict({
     Token.Answer: '#2196f3 bold',
     Token.Question: '',
 })
-
-import argparse
 
 parser = argparse.ArgumentParser(description='Render session pre-roll')
 parser.add_argument('--h265', dest='h265_codec', action='store_const',
@@ -159,6 +147,14 @@ parser.add_argument('--trailers', dest='max_trailers', metavar='N', type=int, na
                     help='an integer for the accumulator')
 args = parser.parse_args()
 
+check_program('ffprobe')
+check_program('ffmpeg')
+
+check_dir('./output')
+check_dir('./Posters')
+check_dir('./Sessions')
+check_dir('./Trailers')
+
 sessions = glob.glob('Sessions/*')
 if len(sessions) == 0:
     sys.exit("Please add sessions in the Sessions directory.")
@@ -166,7 +162,7 @@ result = prompt({
     'type': 'checkbox',
     'name': 'sessions',
     'message': 'What session(s) do you want to render?',
-    'choices': list(map(lambda s: {'name': s.split('/')[-1], 'value': s, 'checked': True}, sessions))
+    'choices': list(map(lambda s: {'name': s.split('/')[-1], 'value': s}, sessions))
 }, style=style)
 if result:
     max_trailers = 99
