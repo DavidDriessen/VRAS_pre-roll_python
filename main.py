@@ -44,10 +44,9 @@ def gen_session_name(session, delimiter=" & "):
     return delimiter.join(get_session_series(session))
 
 
-def gen_current_session_poster(session):
-    current_session_posters = [ffmpeg.input(poster, framerate=25, t=10, loop=1)
-                                   .filter('scale', 320, 450, force_original_aspect_ratio='decrease')
-                                   .filter('pad', width=320, height=450, x='(ow-iw)/2', y='(oh-ih)/2', color='black')
+def gen_current_session_poster(session, duration=10):
+    current_session_posters = [ffmpeg.input(poster, framerate=25, t=duration, loop=1)
+                                   .filter('scale', 320, 450)
                                for poster in glob.glob(glob.escape(session) + '/*')]
     if len(current_session_posters) == 0:
         sys.exit("Please put posters in session folder '" + session + "'")
@@ -64,13 +63,20 @@ def gen_current_session_poster(session):
 def get_trailers(session):
     series = get_session_series(session)
     return list(filter(lambda x: x not in series,
-                       [ffmpeg.input(trailer) for trailer in glob.glob('Trailers/*.mp4')]))
+                       [{'input': ffmpeg.input(trailer), 'data': ffmpeg.probe(trailer)} for trailer in
+                        glob.glob('Trailers/*.mp4')]))
+
+
+# Durations are in seconds
+def apply_fade(stream, total_duration, fade_duration):
+    return stream.filter('fade', type='in', start_time=0, duration=fade_duration) \
+        .filter('fade', type='out', start_time=total_duration - fade_duration, duration=fade_duration)
 
 
 def gen_trailer_with_current_session(session, max_trailers=99):
-    cs = gen_current_session_poster(session).filter('setsar', 1) \
-        .filter('fade').filter('reverse').filter('fade') \
-        .filter('reverse').filter_multi_output('split')
+    current_session_poster_duration = 10
+    cs = apply_fade(gen_current_session_poster(session, current_session_poster_duration)
+                    .filter('setsar', 1), current_session_poster_duration, 1).filter_multi_output('split')
     vids = []
     trailers = get_trailers(session)
     shuffle(trailers)
@@ -78,12 +84,9 @@ def gen_trailer_with_current_session(session, max_trailers=99):
     if nTrailers > max_trailers:
         nTrailers = max_trailers
     for i in range(nTrailers):
-        v = ffmpeg.concat(trailers[i].video
-                          .filter('scale', 920, 540).filter('setsar', 1)
-                          .filter('fade').filter('reverse')
-                          .filter('fade').filter('reverse'),
-                          cs[i])
-        a = trailers[i].audio
+        v = ffmpeg.concat(apply_fade(trailers[i]['input'].video.filter('scale', 920, 540).filter('setsar', 1),
+                                     float(trailers[i]['data']['format']['duration']), 1), cs[i])
+        a = trailers[i]['input'].audio
         vids += [v, a]
     return ffmpeg.concat(*vids, v=1, a=1)
 
