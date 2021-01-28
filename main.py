@@ -114,11 +114,12 @@ def gen_countdown_file(length_in_sec, session):
 def render_session(session, max_trailers, codec, debug=False):
     session_name = session.split('/')[-1]
     trailers = get_trailers(session, max_trailers)
-    vid_len = sum(map(lambda t: float(t['data']['format']['duration']), trailers)) + len(trailers) * 10
+    vid_len = sum(map(lambda t: float(t['data']['format']['duration']), trailers)) + len(trailers) * 10 - 1
     countdown = gen_countdown_file(vid_len, session_name)
     out = overlay_trailers(gen_trailer_with_current_session(session, trailers)) \
-        .filter('subtitles', countdown, force_style='Alignment=7') \
-        .output('output/' + session_name + '.mp4', vcodec=codec, pix_fmt="yuv420p").overwrite_output()
+        .filter('subtitles', countdown, force_style='Alignment=7')\
+        .filter('fade', type='out', start_time=vid_len - 5, duration=5) \
+        .output('output/' + session_name + '.mp4', t=vid_len, vcodec=codec, pix_fmt="yuv420p").overwrite_output()
     if debug:
         f = open('output/' + session_name + '.graph.png', "wb")
         f.write(out.view(pipe=True))
