@@ -4,6 +4,7 @@ import shutil
 import sys
 import ffmpeg
 import argparse
+from math import floor
 from pathlib import Path
 from pprint import pprint
 from random import shuffle
@@ -37,15 +38,16 @@ def gen_session_name(session, delimiter=" & "):
 
 
 def gen_current_session_poster(session, duration=10):
-    current_session_posters = [ffmpeg.input(poster, framerate=25, t=duration, loop=1)
-                                   .filter('scale', 320, 450)
-                               for poster in glob.glob(glob.escape(session) + '/*')]
+    current_session_posters = glob.glob(glob.escape(session) + '/*')
     if len(current_session_posters) == 0:
         sys.exit("Please put posters in session folder '" + session + "'")
     if len(current_session_posters) > 1:
-        session_frame = ffmpeg.filter(current_session_posters, 'hstack')
+        session_frame = ffmpeg.filter(
+            list(map(lambda poster: ffmpeg.input(poster, framerate=25, t=duration, loop=1)
+                     .filter('scale', min([320, floor(920 / len(current_session_posters))]), 450),
+                     current_session_posters)), 'hstack', inputs=len(current_session_posters))
     else:
-        session_frame = current_session_posters[0]
+        session_frame = ffmpeg.input(current_session_posters[0], framerate=25, t=duration, loop=1).filter('scale', 320)
     return session_frame \
         .filter('pad', width=920, height=540, x='(ow-iw)/2', y='(oh-ih)', color='black') \
         .drawtext("This session:", fontsize=38, fontcolor='white', x='(w-tw)/2') \
@@ -117,7 +119,7 @@ def render_session(session, max_trailers, codec, debug=False):
     vid_len = sum(map(lambda t: float(t['data']['format']['duration']), trailers)) + len(trailers) * 10 - 1
     countdown = gen_countdown_file(vid_len, session_name)
     out = overlay_trailers(gen_trailer_with_current_session(session, trailers)) \
-        .filter('subtitles', countdown, force_style='Alignment=7')\
+        .filter('subtitles', countdown, force_style='Alignment=7') \
         .filter('fade', type='out', start_time=vid_len - 5, duration=5) \
         .output('output/' + session_name + '.mp4', t=vid_len, vcodec=codec, pix_fmt="yuv420p").overwrite_output()
     if debug:
