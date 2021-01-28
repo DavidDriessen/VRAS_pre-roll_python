@@ -52,11 +52,15 @@ def gen_current_session_poster(session, duration=10):
         .drawtext(gen_session_name(session), fontsize=37, fontcolor='white', x='(w-tw)/2', y=48)
 
 
-def get_trailers(session):
+def get_trailers(session, max=99):
     series = get_session_series(session)
-    return list(filter(lambda x: x not in series,
-                       [{'input': ffmpeg.input(trailer), 'data': ffmpeg.probe(trailer)} for trailer in
-                        glob.glob('Trailers/*.mp4')]))
+    trailers = list(filter(lambda x: x not in series,
+                           [{'input': ffmpeg.input(trailer), 'data': ffmpeg.probe(trailer)} for trailer in
+                            glob.glob('Trailers/*.mp4')]))
+    shuffle(trailers)
+    if len(trailers) > max:
+        return trailers[:max]
+    return trailers
 
 
 # Durations are in seconds
@@ -65,17 +69,12 @@ def apply_fade(stream, total_duration, fade_duration):
         .filter('fade', type='out', start_time=total_duration - fade_duration, duration=fade_duration)
 
 
-def gen_trailer_with_current_session(session, max_trailers=99):
+def gen_trailer_with_current_session(session, trailers):
     current_session_poster_duration = 10
     cs = apply_fade(gen_current_session_poster(session, current_session_poster_duration)
                     .filter('setsar', 1), current_session_poster_duration, 1).filter_multi_output('split')
     vids = []
-    trailers = get_trailers(session)
-    shuffle(trailers)
-    nTrailers = len(trailers)
-    if nTrailers > max_trailers:
-        nTrailers = max_trailers
-    for i in range(nTrailers):
+    for i in range(len(trailers)):
         v = ffmpeg.concat(apply_fade(trailers[i]['input'].video.filter('scale', 920, 540).filter('setsar', 1),
                                      float(trailers[i]['data']['format']['duration']), 1), cs[i])
         a = trailers[i]['input'].audio
@@ -90,17 +89,18 @@ def overlay_trailers(trailers_concat):
 
 def gen_countdown_file(length_in_sec, session):
     import datetime
-    countdown = datetime.datetime.strptime('00:00:00', '%H:%M:%S') + datetime.timedelta(seconds=length_in_sec - 1)
+    countdown = datetime.datetime.strptime('00:00:00', '%H:%M:%S') + datetime.timedelta(seconds=length_in_sec - 2)
     vtime_start = datetime.datetime.strptime('00:00:01', '%H:%M:%S')
     vtime_end = vtime_start + datetime.timedelta(seconds=1)
     subindex = 1
     timecheck = True
-    f = open('output/' + session + ".ssa", "w")
+    filename = 'output/' + session + ".ssa"
+    f = open(filename, "w")
     write = lambda s: f.write(s + '\n')
     while (timecheck):
         write(str(subindex))
         write(vtime_start.strftime('%H:%M:%S') + ",000 --> " + vtime_end.strftime('%H:%M:%S') + ",000")
-        write("{\pos(350, 25}" + countdown.strftime('%#M:%S'))
+        write(countdown.strftime('%#M:%S'))
         write("")
         timecheck = countdown.strftime('%M:%S') != '00:00'
         countdown = countdown - datetime.timedelta(seconds=1)
@@ -108,11 +108,16 @@ def gen_countdown_file(length_in_sec, session):
         vtime_end = vtime_start + datetime.timedelta(seconds=1)
         subindex += 1
     f.close()
+    return filename
 
 
 def render_session(session, max_trailers, codec, debug=False):
     session_name = session.split('/')[-1]
-    out = overlay_trailers(gen_trailer_with_current_session(session, max_trailers)) \
+    trailers = get_trailers(session, max_trailers)
+    vid_len = sum(map(lambda t: float(t['data']['format']['duration']), trailers)) + len(trailers) * 10
+    countdown = gen_countdown_file(vid_len, session_name)
+    out = overlay_trailers(gen_trailer_with_current_session(session, trailers)) \
+        .filter('subtitles', countdown, force_style='Alignment=7') \
         .output('output/' + session_name + '.mp4', vcodec=codec, pix_fmt="yuv420p").overwrite_output()
     if debug:
         f = open('output/' + session_name + '.graph.png', "wb")
@@ -125,8 +130,7 @@ def render_session(session, max_trailers, codec, debug=False):
         pprint(command)
     else:
         out.run()
-        gen_countdown_file(float(ffmpeg.probe('output/' + session_name + '.mp4')['format']['duration']),
-                           session_name)
+        os.remove(countdown)
 
 
 style = style_from_dict({
