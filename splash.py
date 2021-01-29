@@ -39,9 +39,7 @@ def gen_poster_array():
     shuffle(poster_glob)
     posters = []
     for i in range(0, 6):
-        posters.append(
-            ffmpeg.input(poster_glob[i])
-                .filter('scale', 990 / 3, 460))
+        posters.append(ffmpeg.input(poster_glob[i]).filter('scale', 990 / 3, 460).filter('setsar', 1))
     row1 = ffmpeg.filter(posters[:3], 'hstack', inputs=len(posters[:3]))
     row2 = ffmpeg.filter(posters[3:], 'hstack', inputs=len(posters[3:]))
     return ffmpeg.filter([row1, row2], 'vstack')
