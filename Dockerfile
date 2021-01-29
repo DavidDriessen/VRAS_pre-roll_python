@@ -8,5 +8,7 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT [ "python3", "main.py" ]
+WORKDIR data
+
+ENTRYPOINT [ "python3", "../main.py" ]
 CMD []

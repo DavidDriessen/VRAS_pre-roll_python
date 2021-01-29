@@ -10,10 +10,7 @@ Docker is the recommended way to setup this project, it makes installation and u
 Then to run the project, run
 ```bash
 docker run -it --rm \
--v "/$(pwd)/Sessions/:/app/Sessions" \
--v "/$(pwd)/Posters/:/app/Posters" \
--v "/$(pwd)/Trailers/:/app/Trailers" \
--v "/$(pwd)/output/:/app/output" \
+-v "$(pwd):/app/data" \
 daviddual/vras_pre-roll
 ```
 Add ```--h265``` to the and of the command to render with h265 encoder. 
