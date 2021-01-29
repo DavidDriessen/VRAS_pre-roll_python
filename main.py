@@ -41,13 +41,13 @@ def gen_current_session_poster(session, duration=10):
     current_session_posters = glob.glob(glob.escape(session) + '/*')
     if len(current_session_posters) == 0:
         sys.exit("Please put posters in session folder '" + session + "'")
+    current_session_posters = list(map(lambda poster: ffmpeg.input(poster, framerate=25, t=duration, loop=1)
+                                       .filter('scale', min([320, floor(920 / len(current_session_posters))]), 450),
+                                       current_session_posters))
     if len(current_session_posters) > 1:
-        session_frame = ffmpeg.filter(
-            list(map(lambda poster: ffmpeg.input(poster, framerate=25, t=duration, loop=1)
-                     .filter('scale', min([320, floor(920 / len(current_session_posters))]), 450),
-                     current_session_posters)), 'hstack', inputs=len(current_session_posters))
+        session_frame = ffmpeg.filter(current_session_posters, 'hstack', inputs=len(current_session_posters))
     else:
-        session_frame = ffmpeg.input(current_session_posters[0], framerate=25, t=duration, loop=1).filter('scale', 320)
+        session_frame = current_session_posters[0]
     return session_frame \
         .filter('pad', width=920, height=540, x='(ow-iw)/2', y='(oh-ih)', color='black') \
         .drawtext("This session:", fontsize=38, fontcolor='white', x='(w-tw)/2') \
