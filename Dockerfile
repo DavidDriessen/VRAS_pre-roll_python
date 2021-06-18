@@ -2,13 +2,13 @@ FROM ubuntu:18.04
 
 # Install deps
 WORKDIR /app
-RUN apt-get update && apt-get -y install libmagick++-6.q16-dev python3 python3-pip ffmpeg imagemagick
+RUN apt-get update && apt-get -y install python3 python3-pip ffmpeg
 ADD ./requirements.txt /app/requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY . .
 
-# Remove policy
-RUN pattern='<policy domain="path" rights="none" pattern="@*"/>' && replace='<!-- <policy domain="path" rights="none" pattern="@*"/> -->' && sed --expression 's@$pattern@$replace@g' /etc/ImageMagick-6/policy.xml > /etc/ImageMagick-6/policy.xml
+WORKDIR data
 
-CMD python3 main.py
+ENTRYPOINT [ "python3", "../main.py" ]
+CMD []

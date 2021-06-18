@@ -1,43 +1,15 @@
-from splash import splash
-from moviepy.editor import *
-import subprocess
-import shutil
 import glob
-from pathlib import Path
-from random import shuffle
 import os
-
-# Paths / prefixes
-font = "./font.ttf"
-magick_convert = ["convert"]
-ffmpeg = ["ffmpeg"]
-ffprobe = ["ffprobe"]
-
-if os.name == 'nt':
-    magick_convert = ["magick"] + magick_convert
-
-
-def gen_file_name(session_name):
-    id = 0
-    while os.path.exists(str(id).zfill(2) + '' + session_name):
-        id += 1
-    return id + '' + name
-
-
-# Pre-run checks
-def check_dir(dir):
-    if not os.path.isdir(dir):
-        os.mkdir(dir)
-
-
-check_dir('./tmp')
-check_dir('./tmp/splash')
-check_dir('./tmp')
-check_dir('./tmp/Trailers')
-check_dir('./output')
-check_dir('./Posters')
-check_dir('./Sessions')
-check_dir('./Trailers')
+import shutil
+import sys
+import ffmpeg
+import argparse
+from math import floor
+from pathlib import Path
+from pprint import pprint
+from random import shuffle
+from splash import gen_guide, gen_poster_array_with_text
+from PyInquirer import style_from_dict, Token, prompt
 
 
 # Required programs
@@ -47,120 +19,161 @@ def check_program(cmd):
         sys.exit(cmd + " was not found on your system.")
 
 
-check_program(ffprobe[0])
-check_program(ffmpeg[0])
-check_program(magick_convert[0])
-
-if not os.path.isfile(font):
-    sys.exit("Font " + font + " was not found on your system.")
+def check_dir(dir):
+    if not os.path.isdir(dir):
+        os.mkdir(dir)
 
 
-def clean_dir(dir):
-    files = glob.glob(dir + "/*", recursive=True)
-    for file in files:
-        try:
-            os.remove(file)
-        except IsADirectoryError:
-            pass
-
-
-clean_dir('./tmp/splash/')
-clean_dir('./tmp/Trailers/')
-clean_dir('./tmp/')
-
-# Stage 1 generating still frame
-splash().save_frame('./tmp/posters.png')
-
-# Stage 2 Overlaying trailers over still frame
-trailers = glob.glob('Trailers/*.mp4')
-
-if len(trailers) == 0:
-    sys.exit("Please add trailer in the Trailers directory.")
-
-for trailer in trailers:
-    p = subprocess.Popen(
-        ffmpeg + ["-i", "./tmp/posters.png", "-i", "./{0}".format(trailer), "-c:a", "copy", "-filter_complex",
-                  "[1:v:0]scale=900:506,setsar=1[a];[0:v:0][a] overlay=1020:574", "-map", "1:a", "-shortest", "-y",
-                  "./tmp/{0}".format(trailer)])
-    p.wait()
-
-# Stage 3 generating still frame with current session poster
-sessions = glob.glob('Sessions/*')
-if len(sessions) == 0:
-    sys.exit("Please add sessions in the Sessions directory.")
-
-for session in sessions:
-    poster_array = []
-    current = []
+def get_session_series(session):
+    session_name = []
     for poster in glob.glob(glob.escape(session) + '/*'):
         p = Path(poster)
         name = p.stem
-        current.append(name)
-        poster_array.append("./tmp/{}.png".format(name))
-        cmd = magick_convert + [poster, "-resize", "320x450!", "./tmp/{}.png".format(name)]
-        p = subprocess.Popen(cmd)
-        p.wait()
+        session_name.append(name)
+    return session_name
 
-    cmd = magick_convert + poster_array + ["+append", "./tmp/lineup.png"]
-    p = subprocess.Popen(cmd)
-    p.wait()
 
-    cmd = magick_convert + ["./tmp/posters.png", "-gravity", "center", "-fill", "white", "-pointsize", "40", "-font",
-                            font, "-annotate", "+480+40", "This session:\n" + " & ".join(current), "./tmp/text.png"]
-    p = subprocess.Popen(cmd)
-    p.wait()
+def gen_session_name(session, delimiter=" & "):
+    return delimiter.join(get_session_series(session))
 
-    cmd = magick_convert + ["./tmp/text.png", "./tmp/lineup.png", "-gravity", "center", "-geometry", "+480+315",
-                            "-composite", "./tmp/splash/{}.png".format("+".join(current))]
-    p = subprocess.Popen(cmd)
-    p.wait()
 
-# Stage 4 concatenating stage 2 + 3
-for splash in glob.glob("./tmp/splash/*"):
-    concat_list = []
-    p = Path(splash)
-    current_session = p.stem.split("+")
+def gen_current_session_poster(session, duration=10):
+    current_session_posters = glob.glob(glob.escape(session) + '/*')
+    if len(current_session_posters) == 0:
+        sys.exit("Please put posters in session folder '" + session + "'")
+    current_session_posters = list(map(lambda poster: ffmpeg.input(poster, framerate=25, t=duration, loop=1)
+                                       .filter('scale', min([320, floor(920 / len(current_session_posters))]), 450),
+                                       current_session_posters))
+    if len(current_session_posters) > 1:
+        session_frame = ffmpeg.filter(current_session_posters, 'hstack', inputs=len(current_session_posters))
+    else:
+        session_frame = current_session_posters[0]
+    return session_frame \
+        .filter('pad', width=920, height=540, x='(ow-iw)/2', y='(oh-ih)', color='black') \
+        .drawtext("This session:", fontsize=38, fontcolor='white', x='(w-tw)/2') \
+        .drawtext(gen_session_name(session), fontsize=37, fontcolor='white', x='(w-tw)/2', y=48)
 
-    cmd = ffmpeg + ["-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-loop", "1", "-i",
-                    os.path.realpath(splash), "-c:v", "libx264", "-t", "20", "-pix_fmt", "yuv420p", "-vf",
-                    "scale=1920:1080", "-y", "./tmp/splash.mp4"]
-    p = subprocess.Popen(cmd)
-    p.wait()
 
-    g = glob.glob("./tmp/Trailers/*")
-    shuffle(g)
-    for trailer in g:
-        p = Path(trailer)
-        current_trailer = p.stem
-        # Don't want to show a trailer of the show that we're currently showing
-        if current_trailer in current_session:
-            print("Not showing " + current_trailer + " trailer because current session is " + "+".join(current_session))
-            continue
-        concat_list.append(trailer.replace("\\", "/"))
-        concat_list.append('./tmp/splash.mp4')
+def get_trailers(session, max=99):
+    series = get_session_series(session)
+    trailers = list(filter(lambda x: x not in series,
+                           [{'input': ffmpeg.input(trailer), 'data': ffmpeg.probe(trailer)} for trailer in
+                            glob.glob('Trailers/*.mp4')]))
+    shuffle(trailers)
+    if len(trailers) > max:
+        return trailers[:max]
+    return trailers
 
-    filter = ""
-    i = 0
-    length = 0
-    cmd = ffmpeg.copy()
-    if len(concat_list) == 0:
-        continue
-    for video in concat_list:
-        filter = filter + "[{0}:v] [{0}:a]".format(i)
-        cmd.append("-i")
-        cmd.append(video)
 
-        process = subprocess.Popen(
-            ffprobe + ["-loglevel", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", video],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out = process.communicate()
-        length = length + float(out[0])
-        i += 1
+# Durations are in seconds
+def apply_fade(stream, total_duration, fade_duration):
+    return stream.filter('fade', type='in', start_time=0, duration=fade_duration) \
+        .filter('fade', type='out', start_time=total_duration - fade_duration, duration=fade_duration)
 
-    filter = filter + " concat=n={0}:v=1:a=1 [b] [a]; [b] drawtext=fontfile={2}:text='%{{eif\\:trunc(mod((({1}-t)/60),60))\\:d\\:2}}\\:%{{eif\\:trunc(mod({1}-t\\,60))\\:d\\:2}}':fontcolor=white:fontsize=72:x=w-tw-10:y=10:box=1:boxcolor=black@0.5:boxborderw=10,format=yuv420p [v]".format(
-        len(concat_list), length, font)
-    cmd = cmd + ["-filter_complex", filter, "-map", "[v]", "-map", "[a]", "-y",
-                 "./output/{}.mp4".format(gen_file_name("+".join(current_session)))]
-    print(" ".join(cmd))
-    p = subprocess.Popen(cmd)
-    p.wait()
+
+def gen_trailer_with_current_session(session, trailers):
+    current_session_poster_duration = 10
+    cs = apply_fade(gen_current_session_poster(session, current_session_poster_duration)
+                    .filter('setsar', 1), current_session_poster_duration, 1).filter_multi_output('split')
+    vids = []
+    for i in range(len(trailers)):
+        v = ffmpeg.concat(apply_fade(trailers[i]['input'].video.filter('scale', 920, 540).filter('setsar', 1),
+                                     float(trailers[i]['data']['format']['duration']), 1), cs[i])
+        a = trailers[i]['input'].audio
+        vids += [v, a]
+    return ffmpeg.concat(*vids, v=1, a=1)
+
+
+def overlay_trailers(trailers_concat):
+    return ffmpeg.filter([gen_poster_array_with_text(), ffmpeg.filter([gen_guide(), trailers_concat], 'vstack')],
+                         'hstack')
+
+
+def gen_countdown_file(length_in_sec, session):
+    import datetime
+    countdown = datetime.datetime.strptime('00:00:00', '%H:%M:%S') + datetime.timedelta(seconds=length_in_sec - 2)
+    vtime_start = datetime.datetime.strptime('00:00:01', '%H:%M:%S')
+    vtime_end = vtime_start + datetime.timedelta(seconds=1)
+    subindex = 1
+    timecheck = True
+    filename = 'output/' + session + ".ssa"
+    f = open(filename, "w")
+    write = lambda s: f.write(s + '\n')
+    while (timecheck):
+        write(str(subindex))
+        write(vtime_start.strftime('%H:%M:%S') + ",000 --> " + vtime_end.strftime('%H:%M:%S') + ",000")
+        write(countdown.strftime('%#M:%S'))
+        write("")
+        timecheck = countdown.strftime('%M:%S') != '00:00'
+        countdown = countdown - datetime.timedelta(seconds=1)
+        vtime_start = vtime_start + datetime.timedelta(seconds=1)
+        vtime_end = vtime_start + datetime.timedelta(seconds=1)
+        subindex += 1
+    f.close()
+    return filename
+
+
+def render_session(session, max_trailers, codec, debug=False):
+    session_name = session.split('/')[-1]
+    trailers = get_trailers(session, max_trailers)
+    vid_len = sum(map(lambda t: float(t['data']['format']['duration']), trailers)) + len(trailers) * 10 - 1
+    countdown = gen_countdown_file(vid_len, session_name)
+    out = overlay_trailers(gen_trailer_with_current_session(session, trailers)) \
+        .filter('subtitles', countdown, force_style='Alignment=7') \
+        .filter('fade', type='out', start_time=vid_len - 5, duration=5) \
+        .output('output/' + session_name + '.mp4', t=vid_len, vcodec=codec, pix_fmt="yuv420p").overwrite_output()
+    if debug:
+        f = open('output/' + session_name + '.graph.png', "wb")
+        f.write(out.view(pipe=True))
+        f.close()
+        f = open('output/' + session_name + '-detailed.graph.png', "wb")
+        f.write(out.view(pipe=True, detail=True))
+        f.close()
+        command = out.compile()
+        pprint(command)
+    else:
+        out.run()
+        os.remove(countdown)
+
+
+style = style_from_dict({
+    Token.QuestionMark: '#E91E63 bold',
+    Token.Selected: '#673AB7 bold',
+    Token.Instruction: '',  # default
+    Token.Answer: '#2196f3 bold',
+    Token.Question: '',
+})
+
+parser = argparse.ArgumentParser(description='Render session pre-roll')
+parser.add_argument('--h265', dest='h265_codec', action='store_const',
+                    const="libx265", default="libx264",
+                    help='Encode with h265')
+parser.add_argument('--debug', dest='debug', action='store_true',
+                    help='Debug ffmpeg command and filter nodes.')
+parser.add_argument('--trailers', dest='max_trailers', metavar='N', type=int, nargs=1,
+                    help='an integer for the accumulator')
+args = parser.parse_args()
+
+check_program('ffprobe')
+check_program('ffmpeg')
+
+check_dir('./output')
+check_dir('./Posters')
+check_dir('./Sessions')
+check_dir('./Trailers')
+
+sessions = glob.glob('Sessions/*')
+if len(sessions) == 0:
+    sys.exit("Please add sessions in the Sessions directory.")
+result = prompt({
+    'type': 'checkbox',
+    'name': 'sessions',
+    'message': 'What session(s) do you want to render?',
+    'choices': list(map(lambda s: {'name': s.split('/')[-1], 'value': s}, sessions))
+}, style=style)
+if result:
+    max_trailers = 99
+    if args.max_trailers:
+        max_trailers = args.max_trailers[0]
+    for session in result['sessions']:
+        render_session(session, max_trailers, args.h265_codec, args.debug)
